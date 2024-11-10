@@ -4,3 +4,10 @@ spring:
     port: 5672
     username: guest
     password: guest
+bySMA:
+  rabbitmq:
+    queue:
+      name: q1bySMA
+    exchange:
+      name: ex1bySMA
+    routingKey: rk1bySMA
