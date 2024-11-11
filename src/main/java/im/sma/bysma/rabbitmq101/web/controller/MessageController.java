@@ -11,7 +11,7 @@ import im.sma.bysma.rabbitmq101.publisher.RabbitMQProducer;
 /**
  * Message Controller
  * - Send message to RabbitMQ
- */`
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class MessageController {
