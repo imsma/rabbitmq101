@@ -1,9 +1,14 @@
 package im.sma.bysma.rabbitmq101.config;
 
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +23,9 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     // The queue is used to receive messages from the exchange
+    @Value("${bySMA.rabbitmq.jsonQueue.name}")
+    private String jsonQueueName;
+
     @Value("${bySMA.rabbitmq.queue.name}")
     private String queueName;
 
@@ -29,6 +37,10 @@ public class RabbitMQConfig {
     @Value("${bySMA.rabbitmq.routingKey}")
     private String routingKey;
 
+    // The routing key for the jsonQueue
+    @Value("${bySMA.rabbitmq.jsonQueue.routingKey}")
+    private String routingKeyForJsonQueue;
+
     /**
      * Create a queue
      * - The queue will receive messages from the exchange
@@ -38,6 +50,16 @@ public class RabbitMQConfig {
     @Bean
     public Queue queue() {
         return new Queue(queueName);
+    }
+
+    /**
+     * Create a jsonQueue
+     * 
+     * @return Queue
+     */
+    @Bean
+    public Queue jsonQueue() {
+        return new Queue(jsonQueueName);
     }
 
     /**
@@ -66,6 +88,43 @@ public class RabbitMQConfig {
                 .bind(queue())
                 .to(exchange())
                 .with(routingKey);
+    }
+
+    /**
+     * Binding the jsonQueue to the exchange with the routing key
+     * 
+     * @return Binding
+     */
+    @Bean
+    public Binding bindingForJsonQueue() {
+        return BindingBuilder
+                .bind(jsonQueue())
+                .to(exchange())
+                .with(routingKeyForJsonQueue);
+    }
+
+    /**
+     * Create a MessageConverter
+     * 
+     * @return MessageConverter
+     */
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+
+    /**
+     * Create a RabbitTemplate
+     * - The RabbitTemplate is used to send JSON messages to the exchange
+     * 
+     * @param connectionFactory ConnectionFactory
+     * @return AmqpTemplate
+     */
+    @Bean
+    public AmqpTemplate jsonMessageTemplate(ConnectionFactory connectionFactory) {
+        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
+        return rabbitTemplate;
     }
 
     // ConnectionFactory

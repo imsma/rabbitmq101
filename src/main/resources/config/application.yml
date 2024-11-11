@@ -8,6 +8,9 @@ bySMA:
   rabbitmq:
     queue:
       name: q1bySMA
+    jsonQueue:
+      name: jsonQueubySMA
+      routingKey: routingKeyForJSONQueue
     exchange:
       name: ex1bySMA
     routingKey: rk1bySMA
